@@ -1,37 +1,49 @@
-export interface Ok<T> {
-  value: T
-  error: null
+export const ERR_TAG = 'err@dethrow' as const
+
+export interface Err<E = unknown> {
+  readonly _tag: typeof ERR_TAG
+  readonly error: E
 }
 
-export interface Err<E = Error> {
-  value: null
-  error: E
+export function err<E = unknown>(error: E): Err<E> {
+  return {
+    _tag: ERR_TAG,
+    error,
+  }
 }
 
-export function ok<T>(value: T) {
-  return { value, error: null } as Ok<T>
+export function isErr<E = unknown>(r: unknown): r is Err<E> {
+  return (
+    typeof r === 'object'
+    && r !== null
+    && (r as any)._tag === ERR_TAG
+  )
 }
 
-export function err<E = Error>(error: E) {
-  return { value: null, error } as Err<E>
-}
+/** shorthand for `err(new Error("message"))` */
+export const newErr = (message: string) => err(new Error(message))
 
-export function dethrow<T>(fn: () => T) {
+/** transforms a thrown exception into a returned `Err` */
+export function dethrow<T, E = unknown>(fn: () => T): T | Err<E>
+export function dethrow<T, E = unknown>(fn: () => Promise<T>): Promise<T | Err<E>>
+export function dethrow<T, E = unknown>(promise: Promise<T>): Promise<T | Err<E>>
+export function dethrow<T, E = unknown>(input: (() => T) | (() => Promise<T>) | Promise<T>) {
   try {
-    const result = fn()
-    return ok(result)
-  }
-  catch (error) {
-    return err(error)
-  }
-}
+    if (typeof input === 'function') {
+      const result = input()
+      if (result instanceof Promise) {
+        return result.then(r => r).catch(e => err(e as E))
+      }
+      return result
+    }
 
-export async function dethrowAsync<T>(promise: Promise<T>) {
-  try {
-    const result = await promise
-    return result
+    if (input instanceof Promise) {
+      return input.then(r => r).catch(e => err(e as E))
+    }
+
+    return err(new Error('invalid input') as E)
   }
-  catch (error) {
-    return err(error)
+  catch (e) {
+    return err(e as E)
   }
 }
