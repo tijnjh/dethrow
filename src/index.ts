@@ -25,12 +25,20 @@ export function err<E = unknown>(error: E): Err<E> {
   }
 }
 
-export function isOk<T, E = unknown>(r: Ok<T> | Err<E>) {
-  return r._tag === OK_TAG
+export function isOk(r: unknown) {
+  return (
+    r instanceof Object
+    && '_tag' in r
+    && r._tag === OK_TAG
+  )
 }
 
-export function isErr<T, E = unknown>(r: Ok<T> | Err<E>) {
-  return r._tag === ERR_TAG
+export function isErr(r: unknown) {
+  return (
+    r instanceof Object
+    && '_tag' in r
+    && r._tag === ERR_TAG
+  )
 }
 
 /** shorthand for `err(new Error("message"))` */
