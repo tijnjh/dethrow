@@ -25,15 +25,7 @@ export function err<E = unknown>(error: E): Err<E> {
   }
 }
 
-export function isOk(r: unknown) {
-  return (
-    r instanceof Object
-    && '_tag' in r
-    && r._tag === OK_TAG
-  )
-}
-
-export function isErr(r: unknown) {
+export function isErr(r: unknown): r is Err {
   return (
     r instanceof Object
     && '_tag' in r
