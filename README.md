@@ -2,14 +2,6 @@
 
 simple error handling for typescript.  
 
-instead of wrapping values in `Result<T, E>` or `Ok<T>`, dethrow just gives you:  
-
-- a value `T`, or  
-- an `Err<E>`  
-
-no extra `.value` access, no boilerplate. works with sync and async.  
-
----
 
 ## install
 
@@ -17,45 +9,48 @@ no extra `.value` access, no boilerplate. works with sync and async.
 npm install dethrow
 ```
 
----
 
 ## usage
 
 ### sync
 
 ```ts
-import { newErr, isErr } from 'dethrow'
+import { newErr, isErr, ok } from 'dethrow'
 
 function mayFail() {
-  // inferred: string | Err<Error>
-  return Math.random() > 0.5 ? 'ok' : newErr('failed')
+  // inferred: Ok<string> | Err<Error>
+  return Math.random() > 0.5 ? ok('success') : newErr('failed')
 }
 
 const result = mayFail()
 
 if (isErr(result)) {
-  console.error(result.error.message)
+  console.error(result.err.message)
   return
 }
 
-console.log(result.toUpperCase())
+console.log(result.val.toUpperCase())
 ```
 
 ### async
 
 ```ts
-import { dethrow, isErr } from 'dethrow'
-
 async function mayFailAsync() {
-  return Math.random() > 0.5 ? 42 : newErr('nope')
+  if (Math.random() > 0.5) {
+    return 42
+  }
+  else {
+    throw new Error('nope')
+  }
 }
 
-const result = await dethrow(mayFailAsync)
+const result = await dethrow(mayFailAsync())
 
 if (isErr(result)) {
-  console.error(result.error)
-} else {
-  console.log(result + 1)
+  console.error(result.err)
+}
+else {
+  console.log(result.val + 1)
 }
 ```
 
@@ -64,7 +59,9 @@ if (isErr(result)) {
 ```ts
 // wrap a function that might throw
 const safe = dethrow(() => {
-  if (Math.random() > 0.5) throw new Error('boom')
+  if (Math.random() > 0.5) 
+    throw new Error('boom')
+
   return 'ok'
 })
 
@@ -74,8 +71,9 @@ const safeAsync = await dethrow(fetch('https://example.com'))
 
 ## api
 
+- `ok(value)` → wrap any result value  
 - `err(error)` → wrap any error value  
 - `newErr(message)` → shorthand for `err(new Error(message))`  
 - `isErr(value)` → type guard for `Err<E>`  
-- `dethrow(fn | promise)` → catch exceptions and return `Err`  
+- `dethrow(fn | promise)` → catch exceptions and return `Ok | Err`  
 
