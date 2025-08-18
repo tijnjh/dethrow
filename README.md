@@ -15,7 +15,7 @@ npm install dethrow
 ### sync
 
 ```ts
-import { newErr, isErr, ok } from 'dethrow'
+import { newErr, ok } from 'dethrow'
 
 function mayFail() {
   // inferred: Ok<string> | Err<Error>
@@ -24,7 +24,7 @@ function mayFail() {
 
 const result = mayFail()
 
-if (isErr(result)) {
+if (result.isErr()) {
   console.error(result.err.message)
   return
 }
@@ -46,7 +46,7 @@ async function mayFailAsync() {
 
 const result = await dethrow(mayFailAsync())
 
-if (isErr(result)) {
+if (result.isErr()) {
   console.error(result.err)
 }
 else {
@@ -68,12 +68,3 @@ const safe = dethrow(() => {
 // or a promise
 const safeAsync = await dethrow(fetch('https://example.com'))
 ```
-
-## api
-
-- `ok(value)` → wrap any result value  
-- `err(error)` → wrap any error value  
-- `newErr(message)` → shorthand for `err(new Error(message))`  
-- `isErr(value)` → type guard for `Err<E>`  
-- `dethrow(fn | promise)` → catch exceptions and return `Ok | Err`  
-
