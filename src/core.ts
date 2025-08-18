@@ -40,4 +40,8 @@ export class Err<E = unknown> implements Shared<never, E> {
   }
 }
 
-export const err = <E>(error: E) => new Err(error)
+export function err<T extends string>(msg: T): Err<`${T}`>
+export function err<E>(error: E): Err<E>
+export function err<E>(e: E | string) {
+  return new Err(e)
+}
