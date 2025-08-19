@@ -1,5 +1,7 @@
 interface Shared<T, E> {
   readonly isErr: () => this is Err<E>
+
+  /** unwraps `Ok|Err` to `Ok.val`,throws (or returns `or` if provided) on fail */
   readonly unw: <R>(or: R) => T | R
 }
 
